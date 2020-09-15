@@ -94,8 +94,10 @@ const logger = (payload: Payload = {}) => {
       res: res ? resSerializer(res) : {},
     };
 
-    if (res.locals.user) {
-      metadata.user = res.locals.user;
+    // @ts-ignore
+    if (res.locals.user || req.user) {
+      // @ts-ignore
+      metadata.user = res.locals.user || req.user;
     }
 
     res.locals.logger.log(info.level, info.message, metadata);
