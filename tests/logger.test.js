@@ -334,4 +334,15 @@ describe('logger', () => {
     expect(message).toBe('request success for POST /test');
     done();
   });
+
+  test('multiple request', async (done) => {
+    const app = useLogger();
+    await request(app)
+      .get('/')
+      .expect(200)
+      .then(() => {
+        app.close();
+      });
+    done();
+  });
 });

@@ -4,7 +4,6 @@ import cuid from 'cuid';
 import Redact from './redact-secrets';
 import { Payload, ReqObj, ResObj } from './types';
 import { Request, Response, NextFunction } from 'express';
-import { request } from 'http';
 
 const redact = Redact('[REDACTED]');
 
@@ -103,6 +102,8 @@ const logger = (payload: Payload = {}) => {
     res.locals.logger.log(info.level, info.message, metadata);
   };
 
+  const winstonLogger = createLogger();
+
   return async (req: Request, res: Response, next: NextFunction) => {
     // assign correlation id into the context
     // use the one from req header if it exists, otherwise generate a new one
@@ -130,7 +131,7 @@ const logger = (payload: Payload = {}) => {
       oldEnd.apply(res, args);
     };
 
-    const winstonLogger = createLogger({
+    winstonLogger.configure({
       transports,
       level,
       defaultMeta: {
