@@ -4,8 +4,10 @@ export interface Payload {
   msg?: string;
   defaultMeta?: {};
   logReqBody?: boolean;
+  logReqBodyOnly?: string[];
   logReqBodyExcept?: string[];
   logResBody?: boolean;
+  logResBodyOnly?: string[];
   logResBodyExcept?: string[];
 }
 

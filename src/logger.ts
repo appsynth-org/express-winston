@@ -46,8 +46,10 @@ const logger = (payload: Payload = {}) => {
     level = C.INFO,
     msg = C.MSG,
     logReqBody = false,
+    logReqBodyOnly = [],
     logReqBodyExcept = [],
     logResBody = false,
+    logResBodyOnly = [],
     logResBodyExcept = [],
     defaultMeta = {},
   } = payload;
@@ -60,7 +62,11 @@ const logger = (payload: Payload = {}) => {
       ip: req.ip,
     };
 
-    if (logReqBody && !logReqBodyExcept.includes(req.url)) {
+    if (logReqBody && logReqBodyOnly.includes(req.url)) {
+      reqObj.body = req.body;
+    }
+
+    if (logReqBody && logReqBodyOnly.length <= 0 && !logReqBodyExcept.includes(req.url)) {
       reqObj.body = req.body;
     }
 
@@ -74,7 +80,12 @@ const logger = (payload: Payload = {}) => {
       headers: res.getHeaders(),
     };
 
-    if (logResBody && !logResBodyExcept.includes(res.req?.path || '')) {
+    if (logResBody && logResBodyOnly.includes(res.req?.path || '')) {
+      resObj.body = res.locals.body;
+      delete res.locals.body;
+    }
+
+    if (logResBody && logResBodyOnly.length <= 0 && !logResBodyExcept.includes(res.req?.path || '')) {
       resObj.body = res.locals.body;
       delete res.locals.body;
     }

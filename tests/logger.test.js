@@ -191,6 +191,41 @@ describe('logger', () => {
     done();
   });
 
+  test('should only log request body on routes that are whitelisted', async (done) => {
+    const msgs = [];
+    const app = useLogger({
+      transports: [new CustomTransport(msgs)],
+      logReqBody: true,
+      logReqBodyOnly: ['/'],
+      logReqBodyExcept: ['/test'],
+    });
+    await request(app).post('/test2').send({ name: 'John' }).expect(200);
+    await request(app).post('/').send({ name: 'John' }).expect(200);
+    await request(app).post('/test2').send({ name: 'John' }).expect(200);
+    app.close();
+    const [
+      {
+        level: level1,
+        req: { body: body1 },
+      },
+      {
+        level: level2,
+        req: { body: body2 },
+      },
+      {
+        level: level3,
+        req: { body: body3 },
+      },
+    ] = msgs;
+    expect(level1).toBe('info');
+    expect(body1).toBe(undefined);
+    expect(level2).toBe('info');
+    expect(body2).toMatchObject({ name: 'John' });
+    expect(level3).toBe('info');
+    expect(body3).toBe(undefined);
+    done();
+  });
+
   test('should be able to log response body if enabled', async (done) => {
     const msgs = [];
     const app = useLogger(
@@ -237,6 +272,46 @@ describe('logger', () => {
     ] = msgs;
     expect(level).toBe('info');
     expect(body).toBe(undefined);
+    done();
+  });
+
+  test('should only log response body on routes that are whitelisted', async (done) => {
+    const msgs = [];
+    const app = useLogger(
+      {
+        transports: [new CustomTransport(msgs)],
+        logResBody: true,
+        logResBodyOnly: ['/'],
+        logResBodyExcept: ['/test'],
+      },
+      async (req, res) => {
+        res.send({ success: true });
+      }
+    );
+    await request(app).post('/test2').expect(200);
+    await request(app).post('/').expect(200);
+    await request(app).post('/test2').expect(200);
+    app.close();
+    const [
+      {
+        level: level1,
+        res: { body: body1 },
+      },
+      {
+        level: level2,
+        res: { body: body2 },
+      },
+      {
+        level: level3,
+        res: { body: body3 },
+      },
+    ] = msgs;
+    expect(level1).toBe('info');
+    expect(body1).toBe(undefined);
+    expect(level2).toBe('info');
+    expect(body2).toMatchObject({ success: true });
+    expect(level3).toBe('info');
+    expect(body3).toBe(undefined);
     done();
   });
 

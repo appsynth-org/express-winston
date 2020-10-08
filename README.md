@@ -137,6 +137,25 @@ app.use(
 );
 ```
 
+### Logging all request and response bodies only for specific routes
+
+```javascript
+app.use({
+  logger({
+    logReqBody: true,
+    logReqBodyExcept: [
+      '/register',
+      '/login'
+    ],
+    logResBody: true,
+    logResBodyOnly: [
+      '/register',
+      '/login'
+    ]
+  })
+})
+```
+
 ### Logging all request and response bodies except for specific routes
 
 ```javascript
@@ -155,6 +174,8 @@ app.use({
   })
 })
 ```
+
+> **Note**: If `logResBodyOnly` and/or `logReqBodyOnly` has been specified, `logReqBodyExcept` and/or `logResBodyExcept` will be ignored
 
 ### Adding extra logs to your router
 
