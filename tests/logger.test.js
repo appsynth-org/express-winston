@@ -420,4 +420,39 @@ describe('logger', () => {
       });
     done();
   });
+
+  test('it should not log if user-agent is from kube-probe', async (done) => {
+    const msgs = [];
+    const app = useLogger({
+      transport: [new CustomTransport(msgs)],
+    });
+
+    await request(app)
+      .post('/test')
+      .set('user-agent', 'kube-probe/1.10')
+      .expect(200)
+      .then(() => app.close());
+
+    expect(msgs.length).toBe(0);
+
+    done();
+  });
+
+  test('it should not log if skip condition was met', async (done) => {
+    const msgs = [];
+    const app = useLogger({
+      transports: [new CustomTransport(msgs)],
+      skip: (req, res) => {
+        return req.url === '/skip';
+      },
+    });
+    await request(app)
+      .post('/skip')
+      .expect(200)
+      .then(() => app.close());
+
+    expect(msgs.length).toBe(0);
+
+    done();
+  });
 });

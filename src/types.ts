@@ -1,5 +1,8 @@
+import { Request, Response } from 'express';
+import TransportStream from 'winston-transport';
+
 export interface Payload {
-  transports?: any;
+  transports?: TransportStream | TransportStream[];
   level?: string;
   msg?: string;
   defaultMeta?: {};
@@ -9,6 +12,7 @@ export interface Payload {
   logResBody?: boolean;
   logResBodyOnly?: string[];
   logResBodyExcept?: string[];
+  skip?: (req: Request, res: Response) => boolean;
 }
 
 export interface ReqObj {
