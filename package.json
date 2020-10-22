@@ -1,6 +1,6 @@
 {
   "name": "@appsynth-org/express-winston",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Appsynth's Winston logger middleware for Express",
   "repository": "git://github.com/appsynth-org/express-winston.git",
   "main": "dist/logger.js",
