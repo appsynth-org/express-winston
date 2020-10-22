@@ -65,8 +65,10 @@ app.use(
     transports: [new winston.transports.Console()],
     level: 'info',
     logReqBody: false,
+    logReqBodyOnly: [],
     logReqBodyExcept: [],
     logResBody: false,
+    logResBodyOnly: [],
     logResBodyExcept: [],
   })
 );
@@ -137,13 +139,13 @@ app.use(
 );
 ```
 
-### Logging all request and response bodies only for specific routes
+### Logging all request and response bodies ONLY for specific routes
 
 ```javascript
 app.use({
   logger({
     logReqBody: true,
-    logReqBodyExcept: [
+    logReqBodyOnly: [
       '/register',
       '/login'
     ],
@@ -156,7 +158,7 @@ app.use({
 })
 ```
 
-### Logging all request and response bodies except for specific routes
+### Logging all request and response bodies EXCEPT for specific routes
 
 ```javascript
 app.use({
@@ -184,6 +186,18 @@ async (req, res) => {
   res.locals.logger.info('Request received');
   res.send('Cool!)
 };
+```
+
+### Skipping logs
+
+```javascript
+app.use(
+  logger({
+    skip: (req, res) => {
+      return req.headers['user-agent'] && req.headers['user-agent'].includes('kube-probe');
+    },
+  })
+);
 ```
 
 ## Contributing

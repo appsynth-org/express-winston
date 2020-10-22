@@ -4,8 +4,10 @@ import cuid from 'cuid';
 import Redact from './redact-secrets';
 import { Payload, ReqObj, ResObj } from './types';
 import { Request, Response, NextFunction } from 'express';
+import debug from 'debug';
 
 const redact = Redact('[REDACTED]');
+const d = debug('appsynth-logger');
 
 const isJSON = (str: string): boolean => {
   try {
@@ -41,6 +43,10 @@ const getLogLevel = (statusCode: number = 200, defaultLevel = C.INFO) => {
 };
 
 const logger = (payload: Payload = {}) => {
+  const skipKubePropeReq = (req: Request, res: Response) => {
+    return req.headers['user-agent'] && req.headers['user-agent'].includes('kube-probe');
+  };
+
   const {
     transports = [new winston.transports.Console()],
     level = C.INFO,
@@ -52,6 +58,7 @@ const logger = (payload: Payload = {}) => {
     logResBodyOnly = [],
     logResBodyExcept = [],
     defaultMeta = {},
+    skip = skipKubePropeReq,
   } = payload;
 
   const reqSerializer = (req: Request) => {
@@ -167,8 +174,13 @@ const logger = (payload: Payload = {}) => {
       // catch and throw it later
       error = e;
     } finally {
-      // @ts-ignore
-      onFinished(res, onResponsedFinished.bind(null, req, res, info));
+      const maybeSkip = skip(req, res);
+      if (!maybeSkip) {
+        // @ts-ignore
+        onFinished(res, onResponsedFinished.bind(null, req, res, info));
+      } else {
+        d(`${req.url} is skipped`);
+      }
     }
 
     if (error) {
