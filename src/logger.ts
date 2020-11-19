@@ -120,7 +120,19 @@ const logger = (payload: Payload = {}) => {
     res.locals.logger.log(info.level, info.message, metadata);
   };
 
-  const winstonLogger = createLogger();
+  const winstonLogger = createLogger({
+    transports,
+    level,
+    defaultMeta: {
+      ...{ env: process.env.NODE_ENV },
+      ...defaultMeta,
+    },
+    format: wfcombine(
+      // redact insecure information
+      winston.format((info) => redact.map(info))(),
+      winston.format.json()
+    ),
+  });
 
   return async (req: Request, res: Response, next: NextFunction) => {
     // assign correlation id into the context
@@ -149,23 +161,9 @@ const logger = (payload: Payload = {}) => {
       oldEnd.apply(res, args);
     };
 
-    winstonLogger.configure({
-      transports,
-      level,
-      defaultMeta: {
-        ...{ requestId, env: process.env.NODE_ENV },
-        ...defaultMeta,
-      },
-      format: wfcombine(
-        // redact insecure information
-        winston.format((info) => redact.map(info))(),
-        winston.format.json()
-      ),
-    });
-
     const info: any = { req, started_at: Date.now() };
 
-    res.locals.logger = winstonLogger;
+    res.locals.logger = winstonLogger.child({ requestId });
 
     let error;
     try {
