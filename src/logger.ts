@@ -65,15 +65,15 @@ const logger = (payload: Payload = {}) => {
     const reqObj: ReqObj = {
       headers: req.headers,
       method: req.method,
-      path: req.url,
+      path: req.originalUrl,
       ip: req.ip,
     };
 
-    if (logReqBody && logReqBodyOnly.includes(req.url)) {
+    if (logReqBody && logReqBodyOnly.includes(req.originalUrl)) {
       reqObj.body = req.body;
     }
 
-    if (logReqBody && logReqBodyOnly.length <= 0 && !logReqBodyExcept.includes(req.url)) {
+    if (logReqBody && logReqBodyOnly.length <= 0 && !logReqBodyExcept.includes(req.originalUrl)) {
       reqObj.body = req.body;
     }
 
@@ -103,7 +103,7 @@ const logger = (payload: Payload = {}) => {
   const onResponsedFinished = (req: Request, res: Response, info: any) => {
     info.level = getLogLevel(res.statusCode, level);
     const result = info.level === C.INFO ? 'success' : 'error';
-    info.message = `request ${result} for ${req.method} ${req.url}`;
+    info.message = `request ${result} for ${req.method} ${req.originalUrl}`;
 
     const metadata: any = {
       responseTime: Date.now() - info.started_at,
@@ -177,7 +177,7 @@ const logger = (payload: Payload = {}) => {
         // @ts-ignore
         onFinished(res, onResponsedFinished.bind(null, req, res, info));
       } else {
-        d(`${req.url} is skipped`);
+        d(`${req.originalUrl} is skipped`);
       }
     }
 
